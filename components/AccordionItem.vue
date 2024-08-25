@@ -1,6 +1,6 @@
 <template>
   <div class="accordion_item">
-    <button class="accordion_header" :class="{'is_open': isActive }" @click="toggle">
+    <button class="accordion_header" :class="{'is_open': isActive === true }" @click="toggle">
       <div v-if="$slots.title">
         <slot name="title"></slot>
       </div>
@@ -12,7 +12,7 @@
       @before-leave="beforeLeave"
       @leave="leave"
     >
-      <div class="accordion_content" :class="{'accordion_expanded': isActive, 'snap_motion': snap}" v-show="isActive">
+      <div class="accordion_content" :class="{'accordion_expanded': isActive === true, 'snap_motion': snap}" v-show="isActive === true">
         <slot></slot>
       </div>
     </transition>
@@ -33,22 +33,27 @@ const props = defineProps({
 
 const multiple = inject('multiple');
 const snap = inject('snap');
-const addItems = inject('addItems');
 const activeIndex = inject('activeIndex');
 const setActiveIndex = inject('setActiveIndex');
 
-const isActive = ref(false);
-
-if (!multiple) {
-  isActive.value = computed(() => activeIndex.value === props.index);
-}
+const isActive = computed(() => {
+  if (!multiple) {
+    return activeIndex.value === props.index;
+  } else {
+    return activeIndex.value.includes(props.index);
+  }
+});
 
 // methods
 const toggle = () => {
   if (!multiple) {
     setActiveIndex(props.index);
   } else {
-    isActive.value = !isActive.value;
+    if (isActive.value) {
+      activeIndex.value = activeIndex.value.filter(i => i !== props.index);
+    } else {
+      activeIndex.value.push(props.index);
+    }
   }
 }
 
@@ -73,10 +78,6 @@ onMounted(() => {
       isActive.value = true;
     }
   }
-
-  addItems({
-    title: props.title
-  });
 });
 
 </script>

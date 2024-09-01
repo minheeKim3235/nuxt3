@@ -9,7 +9,7 @@
         @click="activateTab(tab)"
       >
         <!-- Conditionally render based on link or slideTo properties -->
-        <a :href="tab.link?.url || tab.slideTo" :target="tab.link?.target" v-if="tab.link || tab.slideTo">{{ tab.title }}</a>
+        <a :href="tab.link?.url" :target="tab.link?.target" v-if="tab.link">{{ tab.title }}</a>
         <button type="button" v-else>{{ tab.title }}</button>
       </li>
     </ul>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, provide, defineEmits, onMounted, nextTick } from 'vue';
+import { ref, provide, defineEmits, nextTick, defineExpose } from 'vue';
 
 // Reactive state for the active tab
 const activeTab = ref('');
@@ -37,22 +37,31 @@ provide('addTab', (tab) => {
 });
 provide('activeTab', activeTab);
 
+const changeActive = (val) => {
+  activeTab.value = val
+}
 // Function to activate the clicked tab
 const activateTab = async (tab) => {
-  activeTab.value = tab.tabId; // Update active tab
-  emit('slideActive', activeTab.value); // Emit the slideActive event
+  changeActive(tab.tabId); // Update active tab
+  emit('slideActive', tab.slideTo); // Emit the slideActive event
 
   // Wait for DOM update
   await nextTick();
 
   // If slideTo is defined, scroll to that element within the active tab content
   if (tab.slideTo) {
-    const targetElement = document.querySelector(tab.slideTo);
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
-    }
+    const targetElement = document.querySelector(tab.slideTo[0]);
+    window.scrollTo({top: targetElement.offsetTop, behavior: 'smooth' });
   }
 };
+
+defineExpose({
+  changeActive
+})
+
+onMounted(() => {
+  activeTab.value = activeTab.value
+})
 </script>
 <style lang="scss" scoped>
 .tab_basic {
@@ -63,10 +72,22 @@ const activateTab = async (tab) => {
     li {
       flex-grow: 1;
       border: 1px solid #ddd;
-      &.on {
-        color: #fff;
-        background: #555;
+      a, button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 0;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;;
+        box-sizing: border-box;
       }
+      &.on {
+        a, button {
+          color: #fff;
+          background: #555;
+        }
+        }
     }
   }
 }

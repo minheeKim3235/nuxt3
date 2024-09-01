@@ -4,26 +4,14 @@
   </div>
 </template>
 <script setup>
-import { computed, provide } from 'vue'
+import { provide } from 'vue'
 
 const props = defineProps({
-  modelValue: {
-    required: true
-  },
   inline: Boolean
 })
+const model = defineModel();
 
-const emit = defineEmits(['update:modelValue'])
-
-provide('radioModel', computed({
-  get () {
-    return props.modelValue
-  },
-  set (value) {
-    emit('update:modelValue', value)
-  }
-}));
-
+provide('radioModel', model);
 provide('inline', props.inline);
 </script>
 <style lang="scss" scoped>

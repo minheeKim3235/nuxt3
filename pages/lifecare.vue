@@ -7,22 +7,36 @@
         </AccordionItem>
       </template>
     </Accordion>
-    <TabGroups @slide-active="unionShow">
+    <TabGroups class="unionTab" @slide-active="unionShow">
       <TabItem title="tab1">content 1</TabItem>
-      <TabItem title="tab2" slideTo="#union" tabId="union" ></TabItem>
-      <TabItem title="tab3" slideTo="#union2" tabId="union"></TabItem>
-      <TabItem title="tab4" slideTo="#union3" tabId="union"></TabItem>
+      <TabItem title="모집안내" :slideTo="['#pos1','union']"></TabItem>
+      <TabItem title="수업안내" :slideTo="['#pos2','union']"></TabItem>
+      <TabItem title="생활안내" :slideTo="['#pos3','union']"></TabItem>
       <TabItem title="tab5">content 3</TabItem>
     </TabGroups>
     <div v-show="isShow === 'union'">
-      <div id="union" >
-        union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />union1<br />
+      <TabGroups class="unionSubTab">
+        <TabItem title="sub11" :slideTo="['#sub11', 'union']"></TabItem>
+        <TabItem title="sub12" :slideTo="['#sub12', 'union']"></TabItem>
+        <TabItem title="sub13" :slideTo="['#sub13', 'union']"></TabItem>
+      </TabGroups>
+      <div id="pos1" >
+        모집안내
+        <div id="sub11" style="height: 800px; background: wheat">
+          sub11
+        </div>
+        <div id="sub12" style="height: 800px; background: ghostwhite">
+          sub12
+        </div> 
+        <div id="sub13" style="height: 800px; background: wheat">
+          sub13
+        </div>
       </div>
-      <div id="union2" >
-        union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />union2<br />
+      <div id="pos2"  style="height: 800px; background: ghostwhite">
+        수업안내
       </div>
-      <div id="union3" >
-        union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />union3<br />
+      <div id="pos3"  style="height: 800px; background: wheat">
+        생활안내
       </div>
     </div>
   </div>
@@ -40,13 +54,40 @@ const rules = ref([
 ])
 
 const unionShow = (el) => {
-  isShow.value = el === 'union' ? el : ''
-  console.log(isShow.value)
+  if (el) {
+    isShow.value = el[1]
+  } else {
+    isShow.value = ''
+  }
 }
+onMounted(() => {
+  
+})
 </script>
 
 <style lang="scss" scoped>
+div[id^='pos'] {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+div[id^='sub'] {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .accordion_item {
   margin-bottom: -1px;
+}
+.unionTab {
+  position: sticky;
+  top: 0;
+}
+.unionSubTab {
+  position: sticky;
+  top: 35px;
 }
 </style>

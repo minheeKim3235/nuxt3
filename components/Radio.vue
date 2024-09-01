@@ -1,11 +1,12 @@
 <template>
-  <div class="radio_item" :class="{ 'radio_inline': inline }">
-    <input type="radio" v-model="radioModel" :value="value" :id="label">
-    <label :for="label">{{ label }}</label>
+  <div class="radio_item">
+    <input type="radio" v-model="radioModel" :value="value" :id="uniqueId">
+    <label :for="uniqueId">{{ label }}</label>
   </div>
 </template>
 <script setup>
-import { inject } from 'vue'
+import { inject, ref, onMounted } from 'vue'
+import { nanoid } from 'nanoid'
 
 const props = defineProps({
   value: {
@@ -15,7 +16,11 @@ const props = defineProps({
 })
 
 const radioModel = inject('radioModel');
-const inline = inject('inline');
+const uniqueId = ref();
+
+onMounted(() => {
+  uniqueId.value = nanoid(8);
+})
 </script>
 <style lang="scss" scroped>
 .radio_item {
@@ -24,8 +29,5 @@ const inline = inject('inline');
 }
 label {
   padding-left: 5px;
-}
-.radio_inline {
-  margin-right: 10px;
 }
 </style>

@@ -5,10 +5,9 @@
         v-for="(tab, index) in tabs"
         :key="tab.title"
         :id="tab.tabId"
-        :class="{on: activeTab === tab.tabId}"
+        :class="{ on: activeTab === tab.tabId }"
         @click="activateTab(tab)"
       >
-        <!-- Conditionally render based on link or slideTo properties -->
         <a :href="tab.link?.url" :target="tab.link?.target" v-if="tab.link">{{ tab.title }}</a>
         <button type="button" v-else>{{ tab.title }}</button>
       </li>
@@ -19,14 +18,12 @@
 </template>
 
 <script setup>
-import { ref, provide, defineEmits, nextTick, defineExpose } from 'vue';
+import { ref, provide, defineEmits, nextTick, defineExpose, onMounted, onUnmounted } from 'vue';
 
-// Reactive state for the active tab
 const activeTab = ref('');
 const tabs = ref([]);
-
-// Emit event for active tab
 const emit = defineEmits(['slideActive']);
+let observers = [];
 
 // Provide tab management methods to child components
 provide('addTab', (tab) => {
@@ -38,31 +35,66 @@ provide('addTab', (tab) => {
 provide('activeTab', activeTab);
 
 const changeActive = (val) => {
-  activeTab.value = val
-}
-// Function to activate the clicked tab
+  activeTab.value = val;
+};
+
 const activateTab = async (tab) => {
   changeActive(tab.tabId); // Update active tab
   emit('slideActive', tab.slideTo); // Emit the slideActive event
 
-  // Wait for DOM update
   await nextTick();
 
-  // If slideTo is defined, scroll to that element within the active tab content
   if (tab.slideTo) {
     const targetElement = document.querySelector(tab.slideTo[0]);
-    window.scrollTo({top: targetElement.offsetTop, behavior: 'smooth' });
+    window.scrollTo({ top: targetElement.offsetTop, behavior: 'smooth' });
   }
 };
 
-defineExpose({
-  changeActive
-})
+// IntersectionObserver callback
+const handleIntersection = (entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const matchedTab = tabs.value.find(tab => tab.slideTo && tab.slideTo[0] === `#${entry.target.id}`);
+      if (matchedTab) {
+        changeActive(matchedTab.tabId);
+      }
+    }
+  });
+};
+
+// Initialize observers
+const initObservers = () => {
+  observers.forEach(observer => observer.disconnect()); // Clear previous observers
+  observers = [];
+
+  tabs.value.forEach(tab => {
+    if (tab.slideTo) {
+      const targetElement = document.querySelector(tab.slideTo[0]);
+      if (targetElement) {
+        const observer = new IntersectionObserver(handleIntersection, {
+          threshold: 0.5, // Adjust this value based on when you want the tab to activate
+        });
+        observer.observe(targetElement);
+        observers.push(observer);
+      }
+    }
+  });
+};
 
 onMounted(() => {
-  activeTab.value = activeTab.value
-})
+  initObservers();
+});
+
+onUnmounted(() => {
+  observers.forEach(observer => observer.disconnect()); // Clean up observers
+});
+
+defineExpose({
+  changeActive,
+  initObservers
+});
 </script>
+
 <style lang="scss" scoped>
 .tab_basic {
   display: sticky;
